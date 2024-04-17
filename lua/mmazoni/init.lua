@@ -56,54 +56,86 @@ require("nvim-treesitter.configs").setup({
 })
 
 -- lsp
--- Setup language servers.
-local lspconfig = require('lspconfig')
-lspconfig.pyright.setup {}
-lspconfig.tsserver.setup {}
-lspconfig.rust_analyzer.setup {
-  -- Server-specific settings. See `:help lspconfig-setup`
-  settings = {
-    ['rust-analyzer'] = {},
-  },
-}
+local cmp = require('cmp')
+local cmp_lsp = require("cmp_nvim_lsp")
+local capabilities = vim.tbl_deep_extend(
+    "force",
+    {},
+    vim.lsp.protocol.make_client_capabilities(),
+    cmp_lsp.default_capabilities())
 
+require("fidget").setup({})
+require("mason").setup()
+require("mason-lspconfig").setup({
+    ensure_installed = {
+        "lua_ls",
+        "ansiblels",
+        "azure_pipelines_ls",
+        "bashls",
+        "docker_compose_language_service",
+        "dockerls",
+        "helm_ls",
+        "powershell_es",
+        "ruff_lsp",
+        "terraformls",
+    },
+    handlers = {
+        function(server_name) -- default handler (optional)
 
--- Global mappings.
--- See `:help vim.diagnostic.*` for documentation on any of the below functions
-vim.keymap.set('n', '<space>e', vim.diagnostic.open_float)
-vim.keymap.set('n', '[d', vim.diagnostic.goto_prev)
-vim.keymap.set('n', ']d', vim.diagnostic.goto_next)
-vim.keymap.set('n', '<space>q', vim.diagnostic.setloclist)
+            require("lspconfig")[server_name].setup {
+                capabilities = capabilities
+            }
+        end,
 
--- Use LspAttach autocommand to only map the following keys
--- after the language server attaches to the current buffer
-vim.api.nvim_create_autocmd('LspAttach', {
-  group = vim.api.nvim_create_augroup('UserLspConfig', {}),
-  callback = function(ev)
-    -- Enable completion triggered by <c-x><c-o>
-    vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+        ["lua_ls"] = function()
+            local lspconfig = require("lspconfig")
+            lspconfig.lua_ls.setup {
+                capabilities = capabilities,
+                settings = {
+                    Lua = {
+			    runtime = { version = "Lua 5.1" },
+                        diagnostics = {
+                            globals = { "vim", "it", "describe", "before_each", "after_each" },
+                        }
+                    }
+                }
+            }
+        end,
+    }
+})
 
-    -- Buffer local mappings.
-    -- See `:help vim.lsp.*` for documentation on any of the below functions
-    local opts = { buffer = ev.buf }
-    vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
-    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
-    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
-    vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, opts)
-    vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, opts)
-    vim.keymap.set('n', '<space>wl', function()
-      print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-    end, opts)
-    vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, opts)
-    vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
-    vim.keymap.set({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
-    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
-    vim.keymap.set('n', '<space>f', function()
-      vim.lsp.buf.format { async = true }
-    end, opts)
-  end,
+local cmp_select = { behavior = cmp.SelectBehavior.Select }
+
+cmp.setup({
+    snippet = {
+        expand = function(args)
+            require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+        end,
+    },
+    mapping = cmp.mapping.preset.insert({
+        ['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
+        ['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
+        ['<C-y>'] = cmp.mapping.confirm({ select = true }),
+        ["<C-Space>"] = cmp.mapping.complete(),
+    }),
+    sources = cmp.config.sources({
+        { name = 'nvim_lsp' },
+        { name = 'luasnip' }, -- For luasnip users.
+    }, {
+        { name = 'buffer' },
+    })
+})
+
+vim.diagnostic.config({
+    -- update_in_insert = true,
+    float = {
+        focusable = false,
+        style = "minimal",
+        border = "rounded",
+        source = "always",
+        header = "",
+        prefix = "",
+    },
 })
 
 -- harpoon
@@ -140,3 +172,38 @@ vim.keymap.set("n", "<C-s>", function() harpoon:list():select(4) end)
 -- Toggle previous & next buffers stored within Harpoon list
 vim.keymap.set("n", "<C-S-P>", function() harpoon:list():prev() end)
 vim.keymap.set("n", "<C-S-N>", function() harpoon:list():next() end)
+
+-- fugitive
+vim.keymap.set("n", "<leader>gs", vim.cmd.Git)
+
+local Mmazoni_Fugitive = vim.api.nvim_create_augroup("Mmazoni_Fugitive", {})
+
+local autocmd = vim.api.nvim_create_autocmd
+autocmd("BufWinEnter", {
+    group = Mmazoni_Fugitive,
+    pattern = "*",
+    callback = function()
+        if vim.bo.ft ~= "fugitive" then
+            return
+        end
+
+        local bufnr = vim.api.nvim_get_current_buf()
+        local opts = {buffer = bufnr, remap = false}
+        vim.keymap.set("n", "<leader>p", function()
+            vim.cmd.Git('push')
+        end, opts)
+
+        -- rebase always
+        vim.keymap.set("n", "<leader>P", function()
+            vim.cmd.Git({'pull',  '--rebase'})
+        end, opts)
+
+        -- NOTE: It allows me to easily set the branch i am pushing and any tracking
+        -- needed if i did not set the branch up correctly
+        vim.keymap.set("n", "<leader>t", ":Git push -u origin ", opts);
+    end,
+})
+
+
+vim.keymap.set("n", "gu", "<cmd>diffget //2<CR>")
+vim.keymap.set("n", "gh", "<cmd>diffget //3<CR>")
