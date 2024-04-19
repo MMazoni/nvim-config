@@ -28,3 +28,4 @@ I am in this journey to live more in the terminal, so I'll be using neovim only 
 | Fugitive | SPACE + t          | Push to upstream origin                 |
 | Fugitive | g + u              | Get diff from left side (version 2)     |
 | Fugitive | g + h              | Get diff from right side (version 3)    |
+| UndoTree | SPACE + u          | Toggle Undo                             |
