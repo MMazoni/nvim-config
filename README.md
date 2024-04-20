@@ -29,3 +29,5 @@ I am in this journey to live more in the terminal, so I'll be using neovim only 
 | Fugitive | g + u              | Get diff from left side (version 2)     |
 | Fugitive | g + h              | Get diff from right side (version 3)    |
 | UndoTree | SPACE + u          | Toggle Undo                             |
+| ZenMode  | SPACE + z + z      | Toggle ZenMode with 90px width          |
+| ZenMode  | SPACE + z + Z      | Toggle ZenMode with 80px width          |
