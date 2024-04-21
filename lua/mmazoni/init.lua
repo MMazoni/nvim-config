@@ -3,7 +3,7 @@ require("mmazoni.set")
 require("mmazoni.lazy_init")
 -- colorscheme 
 require('catppuccin').setup()
-vim.cmd.colorscheme "catppuccin"
+vim.cmd.colorscheme "catppuccin-latte"
 
 -- telescope
 require('telescope').setup({})
