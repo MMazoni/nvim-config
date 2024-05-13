@@ -26,6 +26,8 @@ I am in this journey to live more in the terminal, so I'll be using neovim only 
 | Fugitive | SPACE + p          | Push current branch                     |
 | Fugitive | SPACE + SHIFT + P  | Pull with rebase                        |
 | Fugitive | SPACE + t          | Push to upstream origin                 |
+| Fugitive | d + v              | Open conflict in 3 views                |
+|     -    | CTRL + w + =       | Equalize the 3 views sizes              |
 | Fugitive | g + u              | Get diff from left side (version 2)     |
 | Fugitive | g + h              | Get diff from right side (version 3)    |
 | UndoTree | SPACE + u          | Toggle Undo                             |
