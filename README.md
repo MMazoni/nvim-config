@@ -34,3 +34,4 @@ I am in this journey to live more in the terminal, so I'll be using neovim only 
 | ZenMode  | SPACE + z + z      | Toggle ZenMode with 90px width          |
 | ZenMode  | SPACE + z + Z      | Toggle ZenMode with 80px width          |
 |     -    | g + d              | Jump to function definition             |
+| Glow     | :Glow              | Preview markdown file                   |
