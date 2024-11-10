@@ -2,8 +2,14 @@ require("mmazoni.remap")
 require("mmazoni.set")
 require("mmazoni.lazy_init")
 -- colorscheme 
-require('catppuccin').setup()
-vim.cmd.colorscheme "catppuccin-latte"
+require("cyberdream").setup({
+    transparent = true,
+    borderless_telescope = false,
+    extensions = {
+        telescope = true,
+    },
+})
+vim.cmd.colorscheme "cyberdream"
 
 -- telescope
 require('telescope').setup({})
